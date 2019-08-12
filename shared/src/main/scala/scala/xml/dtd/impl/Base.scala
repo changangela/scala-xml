@@ -20,7 +20,7 @@ private[dtd] abstract class Base {
   type _regexpT <: RegExp
 
   abstract class RegExp {
-    val isNullable: Boolean
+    lazy val isNullable: Boolean
   }
 
   object Alt {
@@ -34,7 +34,7 @@ private[dtd] abstract class Base {
   }
 
   class Alt private (val rs: _regexpT*) extends RegExp {
-    final val isNullable = rs exists (_.isNullable)
+    final lazy val isNullable = rs exists (_.isNullable)
   }
 
   object Sequ {
@@ -44,7 +44,7 @@ private[dtd] abstract class Base {
   }
 
   class Sequ private (val rs: _regexpT*) extends RegExp {
-    final val isNullable = rs forall (_.isNullable)
+    final lazy val isNullable = rs forall (_.isNullable)
   }
 
   case class Star(r: _regexpT) extends RegExp {
@@ -59,7 +59,7 @@ private[dtd] abstract class Base {
 
   /** this class can be used to add meta information to regexps. */
   class Meta(r1: _regexpT) extends RegExp {
-    final val isNullable = r1.isNullable
+    final lazy val isNullable = r1.isNullable
     def r = r1
   }
 }
