@@ -33,7 +33,7 @@ object Utility extends AnyRef with parsing.TokenTests {
     f(sb)
     sb.toString
   }
-  private[xml] def isAtomAndNotText(x: Node) = x.isAtom && !x.isInstanceOf[Text]
+  private[xml] def isAtomAndNotText(x: Node | Null) = x.nn.isAtom && !x.nn.isInstanceOf[Text]
 
   /**
    * Trims an element - call this method, when you know that it is an
@@ -73,9 +73,9 @@ object Utility extends AnyRef with parsing.TokenTests {
 
   /** returns a sorted attribute list */
   def sort(md: MetaData): MetaData = if ((md eq Null) || (md.next eq Null)) md else {
-    val key = md.key
-    val smaller = sort(md.filter { m => m.key < key })
-    val greater = sort(md.filter { m => m.key > key })
+    val key = md.key.nn
+    val smaller = sort(md.filter { m => m.key.nn < key })
+    val greater = sort(md.filter { m => m.key.nn > key })
     smaller.foldRight (md copy greater) ((x, xs) => x copy xs)
   }
 
@@ -147,20 +147,20 @@ object Utility extends AnyRef with parsing.TokenTests {
    *
    * @return    `'''null'''` if `ref` was not a predefined entity.
    */
-  final def unescape(ref: String, s: StringBuilder): StringBuilder =
+  final def unescape(ref: String, s: StringBuilder): StringBuilder | Null =
     ((unescMap get ref) map (s append _)).orNull
 
   /**
    * Returns a set of all namespaces used in a sequence of nodes
    * and all their descendants, including the empty namespaces.
    */
-  def collectNamespaces(nodes: Seq[Node]): mutable.Set[String] =
-    nodes.foldLeft(new mutable.HashSet[String]) { (set, x) => collectNamespaces(x, set); set }
+  def collectNamespaces(nodes: Seq[Node]): mutable.Set[String | Null] =
+    nodes.foldLeft(new mutable.HashSet[String | Null]) { (set, x) => collectNamespaces(x, set); set }
 
   /**
    * Adds all namespaces in node to set.
    */
-  def collectNamespaces(n: Node, set: mutable.Set[String]): Unit = {
+  def collectNamespaces(n: Node, set: mutable.Set[String | Null]): Unit = {
     if (n.doCollectNamespaces) {
       set += n.namespace
       for (a <- n.attributes) a match {
@@ -214,7 +214,7 @@ object Utility extends AnyRef with parsing.TokenTests {
    * @todo use a Writer instead
    */
   def serialize(
-    x: Node,
+    x: Node | Null,
     pscope: NamespaceBinding = TopScope,
     sb: StringBuilder = new StringBuilder,
     stripComments: Boolean = false,
@@ -222,17 +222,17 @@ object Utility extends AnyRef with parsing.TokenTests {
     preserveWhitespace: Boolean = false,
     minimizeTags: MinimizeMode.Value = MinimizeMode.Default): StringBuilder =
     {
-      x match {
+      x.nn match {
         case c: Comment                   => if (!stripComments) c buildString sb; sb
         case s: SpecialNode               => s buildString sb
         case g: Group                     =>
-          for (c <- g.nodes) serialize(c, g.scope, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags); sb
+          for (c <- g.nodes) serialize(c, g.scope.nn, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags); sb
         case el: Elem =>
           // print tag with namespace declarations
           sb.append('<')
           el.nameToString(sb)
           if (el.attributes ne null) el.attributes.buildString(sb)
-          el.scope.buildString(sb, pscope)
+          el.scope.nn.buildString(sb, pscope)
           if (el.child.isEmpty &&
             (minimizeTags == MinimizeMode.Always ||
               (minimizeTags == MinimizeMode.Default && el.minimizeEmpty))) {
@@ -241,7 +241,7 @@ object Utility extends AnyRef with parsing.TokenTests {
           } else {
             // children, so use long form: <xyz ...>...</xyz>
             sb.append('>')
-            sequenceToXML(el.child, el.scope, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags)
+            sequenceToXML(el.child, el.scope.nn, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags)
             sb.append("</")
             el.nameToString(sb)
             sb.append('>')
@@ -251,7 +251,7 @@ object Utility extends AnyRef with parsing.TokenTests {
     }
 
   def sequenceToXML(
-    children: Seq[Node],
+    children: Seq[Node | Null],
     pscope: NamespaceBinding = TopScope,
     sb: StringBuilder = new StringBuilder,
     stripComments: Boolean = false,
@@ -262,10 +262,10 @@ object Utility extends AnyRef with parsing.TokenTests {
       if (children.isEmpty) return
       else if (children forall isAtomAndNotText) { // add space
         val it = children.iterator
-        val f = it.next()
+        val f = it.next().nn
         serialize(f, pscope, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags)
         while (it.hasNext) {
-          val x = it.next()
+          val x = it.next().nn
           sb.append(' ')
           serialize(x, pscope, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags)
         }
@@ -283,7 +283,7 @@ object Utility extends AnyRef with parsing.TokenTests {
   /**
    * Returns a hashcode for the given constituents of a node
    */
-  def hashCode(pre: String, label: String, attribHashCode: Int, scpeHash: Int, children: Seq[Node]) =
+  def hashCode(pre: String | Null, label: String, attribHashCode: Int, scpeHash: Int, children: Seq[Node]) =
     scala.util.hashing.MurmurHash3.orderedHash(label +: attribHashCode +: scpeHash +: children, pre.##)
 
   def appendQuoted(s: String): String = sbToString(appendQuoted(s, _))
@@ -310,7 +310,7 @@ object Utility extends AnyRef with parsing.TokenTests {
     sb.append('"')
   }
 
-  def getName(s: String, index: Int): String = {
+  def getName(s: String, index: Int): String | Null = {
     if (index >= s.length) null
     else {
       val xs = s drop index
@@ -323,7 +323,7 @@ object Utility extends AnyRef with parsing.TokenTests {
    * Returns `'''null'''` if the value is a correct attribute value,
    * error message if it isn't.
    */
-  def checkAttributeValue(value: String): String = {
+  def checkAttributeValue(value: String): String | Null = {
     var i = 0
     while (i < value.length) {
       value.charAt(i) match {
@@ -345,7 +345,7 @@ object Utility extends AnyRef with parsing.TokenTests {
 
   def parseAttributeValue(value: String): Seq[Node] = {
     val sb = new StringBuilder
-    var rfb: StringBuilder = null
+    var rfb: StringBuilder | Null = null
     val nb = new NodeBuffer()
 
     val it = value.iterator
@@ -360,14 +360,14 @@ object Utility extends AnyRef with parsing.TokenTests {
           sb.append(theChar)
         } else {
           if (rfb eq null) rfb = new StringBuilder()
-          rfb append c
+          rfb.nn append c
           c = it.next()
           while (c != ';') {
-            rfb.append(c)
+            rfb.nn.append(c)
             c = it.next()
           }
-          val ref = rfb.toString()
-          rfb.clear()
+          val ref = rfb.nn.toString()
+          rfb.nn.clear()
           unescape(ref, sb) match {
             case null =>
               if (sb.length > 0) { // flush buffer

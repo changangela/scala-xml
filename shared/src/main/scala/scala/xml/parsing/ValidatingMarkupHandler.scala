@@ -14,25 +14,25 @@ import scala.xml.dtd._
 
 abstract class ValidatingMarkupHandler extends MarkupHandler {
 
-  var rootLabel: String = _
+  var rootLabel: String | Null = _
   var qStack: List[Int] = Nil
   var qCurrent: Int = -1
 
   var declStack: List[ElemDecl] = Nil
-  var declCurrent: ElemDecl = null
+  var declCurrent: ElemDecl | Null = null
 
   final override val isValidating = true
 
   override def endDTD(n: String) = {
     rootLabel = n
   }
-  override def elemStart(pos: Int, pre: String, label: String, attrs: MetaData, scope: NamespaceBinding): Unit = {
+  override def elemStart(pos: Int, pre: String | Null, label: String | Null, attrs: MetaData, scope: NamespaceBinding): Unit = {
 
     def advanceDFA(dm: DFAContentModel) = {
       val trans = dm.dfa.delta(qCurrent)
       // println("advanceDFA(dm): " + dm)
       // println("advanceDFA(trans): " + trans)
-      trans.get(ContentModel.ElemName(label)) match {
+      trans.get(ContentModel.ElemName(label.nn)) match {
         case Some(qNew) => qCurrent = qNew
         case _          => reportValidationError(pos, "DTD says, wrong element, expected one of " + trans.keys)
       }
@@ -46,7 +46,7 @@ abstract class ValidatingMarkupHandler extends MarkupHandler {
         reportValidationError(pos, "this element should be " + rootLabel)
     } else {
       // println("  checking node")
-      declCurrent.contentModel match {
+      declCurrent.nn.contentModel match {
         case ANY =>
         case EMPTY =>
           reportValidationError(pos, "DTD says, no elems, no text allowed here")
@@ -60,14 +60,14 @@ abstract class ValidatingMarkupHandler extends MarkupHandler {
     }
     // push state, decl
     qStack = qCurrent :: qStack
-    declStack = declCurrent :: declStack
+    declStack = declCurrent.nn :: declStack
 
-    declCurrent = lookupElemDecl(label)
+    declCurrent = lookupElemDecl(label.nn)
     qCurrent = 0
     // println("  done  now")
   }
 
-  override def elemEnd(pos: Int, pre: String, label: String): Unit = {
+  override def elemEnd(pos: Int, pre: String | Null, label: String | Null): Unit = {
     // println("  elemEnd")
     qCurrent = qStack.head
     qStack = qStack.tail

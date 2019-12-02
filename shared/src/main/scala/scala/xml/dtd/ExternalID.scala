@@ -16,9 +16,9 @@ package dtd
  *  @author Burak Emir
  */
 sealed abstract class ExternalID extends parsing.TokenTests {
-  def quoted(s: String) = {
-    val c = if (s contains '"') '\'' else '"'
-    c.toString + s + c
+  def quoted(s: String | Null) = {
+    val c = if (s.nn contains '"') '\'' else '"'
+    c.toString + s.nn + c
   }
 
   // public != null: PUBLIC " " publicLiteral " " [systemLiteral]
@@ -34,8 +34,8 @@ sealed abstract class ExternalID extends parsing.TokenTests {
   def buildString(sb: StringBuilder): StringBuilder =
     sb.append(this.toString())
 
-  def systemId: String
-  def publicId: String
+  def systemId: String | Null
+  def publicId: String | Null
 }
 
 /**
@@ -58,7 +58,7 @@ case class SystemID(systemId: String) extends ExternalID {
  *  @param  publicId the public identifier literal
  *  @param  systemId (can be null for notation pubIDs) the system identifier literal
  */
-case class PublicID(publicId: String, systemId: String) extends ExternalID {
+case class PublicID(publicId: String, systemId: String | Null) extends ExternalID {
   if (!checkPubID(publicId))
     throw new IllegalArgumentException("publicId must consist of PubidChars")
 

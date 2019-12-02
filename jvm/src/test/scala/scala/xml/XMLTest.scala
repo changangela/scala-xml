@@ -22,7 +22,7 @@ object XMLTestJVM {
 class XMLTestJVM {
   import XMLTestJVM.{ e, sc }
 
-  def Elem(prefix: String, label: String, attributes: MetaData, scope: NamespaceBinding, child: Node*): Elem =
+  def Elem(prefix: String | Null, label: String, attributes: MetaData, scope: NamespaceBinding, child: Node*): Elem =
     scala.xml.Elem.apply(prefix, label, attributes, scope, minimizeEmpty = true, child: _*)
 
   lazy val parsedxml1 = XML.load(new InputSource(new StringReader("<hello><world/></hello>")))
@@ -35,7 +35,7 @@ class XMLTestJVM {
     val c = new Node {
       def label = "hello"
       override def hashCode() =
-        Utility.hashCode(prefix, label, attributes.hashCode(), scope.hashCode(), child);
+        Utility.hashCode(prefix, label.nn, attributes.hashCode(), scope.hashCode(), child);
       def child = Elem(null, "world", e, sc);
       //def attributes = e;
       override def text = ""
@@ -315,7 +315,7 @@ class XMLTestJVM {
     val inputStream = new java.io.ByteArrayInputStream(outputStream.toByteArray)
     val streamReader = new java.io.InputStreamReader(inputStream, XML.encoding)
 
-    def unescapeQuotes(str: String) = 
+    def unescapeQuotes(str: String) =
       "&quot;".r.replaceFirstIn(str, "\"")
     val xmlFixed = unescapeQuotes(xml.toString)
     assertEquals(xmlFixed, XML.load(streamReader).toString)
@@ -400,9 +400,9 @@ class XMLTestJVM {
 
   @UnitTest
   def t5052 = {
-    assertTrue(<elem attr={ null: String }/> xml_== <elem/>)
+    assertTrue(<elem attr={ null: String | Null }/> xml_== <elem/>)
     assertTrue(<elem attr={ None }/> xml_== <elem/>)
-    assertTrue(<elem/> xml_== <elem attr={ null: String }/>)
+    assertTrue(<elem/> xml_== <elem attr={ null: String | Null }/>)
     assertTrue(<elem/> xml_== <elem attr={ None }/>)
   }
 
@@ -415,9 +415,9 @@ class XMLTestJVM {
     assertHonorsIterableContract(<a y={ None }/>.attributes)
     assertHonorsIterableContract(<a y={ None } x=""/>.attributes)
     assertHonorsIterableContract(<a a="" y={ None }/>.attributes)
-    assertHonorsIterableContract(<a y={ null: String }/>.attributes)
-    assertHonorsIterableContract(<a y={ null: String } x=""/>.attributes)
-    assertHonorsIterableContract(<a a="" y={ null: String }/>.attributes)
+    assertHonorsIterableContract(<a y={ null: String | Null }/>.attributes)
+    assertHonorsIterableContract(<a y={ null: String | Null } x=""/>.attributes)
+    assertHonorsIterableContract(<a a="" y={ null: String | Null }/>.attributes)
   }
 
   @UnitTest
@@ -474,9 +474,9 @@ class XMLTestJVM {
   @UnitTest
   def attributes = {
     val noAttr = <t/>
-    val attrNull = <t a={ null: String }/>
+    val attrNull = <t a={ null: String | Null }/>
     val attrNone = <t a={ None: Option[Seq[Node]] }/>
-    val preAttrNull = <t p:a={ null: String }/>
+    val preAttrNull = <t p:a={ null: String | Null }/>
     val preAttrNone = <t p:a={ None: Option[Seq[Node]] }/>
     assertEquals(noAttr, attrNull)
     assertEquals(noAttr, attrNone)
@@ -484,8 +484,8 @@ class XMLTestJVM {
     assertEquals(noAttr, preAttrNone)
 
     val xml1 = <t b="1" d="2"/>
-    val xml2 = <t a={ null: String } p:a={ null: String } b="1" c={ null: String } d="2"/>
-    val xml3 = <t b="1" c={ null: String } d="2" a={ null: String } p:a={ null: String }/>
+    val xml2 = <t a={ null: String | Null } p:a={ null: String | Null } b="1" c={ null: String | Null } d="2"/>
+    val xml3 = <t b="1" c={ null: String | Null } d="2" a={ null: String | Null } p:a={ null: String | Null }/>
     assertEquals(xml1, xml2)
     assertEquals(xml1, xml3)
 
@@ -513,7 +513,7 @@ class XMLTestJVM {
     val sink = new PrintStream(new ByteArrayOutputStream())
     (Console withOut sink) {
       (Console withErr sink) {
-        ConstructingParser.fromSource((io.Source fromString xml), true).document().docElem
+        ConstructingParser.fromSource((scala.io.Source fromString xml), true).document().nn.docElem
       }
     }
   }
@@ -656,7 +656,7 @@ class XMLTestJVM {
     val x = <a b="c"><d/><e><f g="h"></f><i/></e></a>
     val formatted = pp.format(x)
     val expected =
-      """|<a 
+      """|<a
          |b="c">
          |  <d
          |  />

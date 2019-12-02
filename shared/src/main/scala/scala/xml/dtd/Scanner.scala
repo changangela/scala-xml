@@ -23,7 +23,7 @@ class Scanner extends Tokens with parsing.TokenTests {
   var token: Int = END
   var value: String = _
 
-  private var it: Iterator[Char] = null
+  private var it: Iterator[Char] | Null = null
   private var c: Char = 'z'
 
   /** initializes the scanner on input s */
@@ -44,7 +44,7 @@ class Scanner extends Tokens with parsing.TokenTests {
   final def isIdentChar = (('a' <= c && c <= 'z')
     || ('A' <= c && c <= 'Z'))
 
-  final def next() = if (it.hasNext) c = it.next() else c = ENDCH
+  final def next() = if (it.nn.hasNext) c = it.nn.next() else c = ENDCH
 
   final def acc(d: Char): Unit = {
     if (c == d) next() else scala.sys.error("expected '" + d + "' found '" + c + "' !")
@@ -54,7 +54,7 @@ class Scanner extends Tokens with parsing.TokenTests {
 
   final def readToken: Int =
     if (isSpace(c)) {
-      while (isSpace(c)) c = it.next()
+      while (isSpace(c)) c = it.nn.next()
       S
     } else c match {
       case '('   =>

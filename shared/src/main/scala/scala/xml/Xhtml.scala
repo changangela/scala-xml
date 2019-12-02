@@ -61,18 +61,18 @@ object Xhtml {
         case er: EntityRef if decodeEntities => decode(er)
         case x: SpecialNode                  => x buildString sb
         case g: Group =>
-          g.nodes foreach { toXhtml(_, x.scope, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags) }
+          g.nodes foreach { toXhtml(_, x.scope.nn, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags) }
 
         case _ =>
           sb.append('<')
           x.nameToString(sb)
           if (x.attributes ne null) x.attributes.buildString(sb)
-          x.scope.buildString(sb, pscope)
+          x.scope.nn.buildString(sb, pscope)
 
           if (shortForm) sb.append(" />")
           else {
             sb.append('>')
-            sequenceToXML(x.child, x.scope, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags)
+            sequenceToXML(x.child, x.scope.nn, sb, stripComments, decodeEntities, preserveWhitespace, minimizeTags)
             sb.append("</")
             x.nameToString(sb)
             sb.append('>')

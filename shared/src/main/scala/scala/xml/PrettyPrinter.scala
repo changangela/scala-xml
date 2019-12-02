@@ -115,7 +115,7 @@ class PrettyPrinter(width: Int, step: Int, minimizeEmpty: Boolean) {
       n nameToString sb
       i = sb.length + 1
       n.attributes buildString sb
-      n.scope.buildString(sb, pscope)
+      n.scope.nn.buildString(sb, pscope)
       sb append '>'
     }
     (sbToString(mkStart), i)
@@ -175,7 +175,7 @@ class PrettyPrinter(width: Int, step: Int, minimizeEmpty: Boolean) {
         if (stg.length < width - cur) { // start tag fits
           makeBox(ind, stg)
           makeBreak()
-          traverse(node.child.iterator, node.scope, ind + step)
+          traverse(node.child.iterator, node.scope.nn, ind + step)
           makeBox(ind, etg)
         } else if (len2 < width - cur) {
           // <start label + attrs + tag + content + end tag
@@ -193,7 +193,7 @@ class PrettyPrinter(width: Int, step: Int, minimizeEmpty: Boolean) {
           makeBox(ind, stg.substring(len2, stg.length).trim)
           if (etg.nonEmpty) {
             makeBreak()
-            traverse(node.child.iterator, node.scope, ind + step)
+            traverse(node.child.iterator, node.scope.nn, ind + step)
             makeBox(cur, etg)
           }
           makeBreak()
