@@ -553,7 +553,7 @@ trait MarkupParser extends MarkupParserCommon with TokenTests {
     }
     //this.dtd.initializeEntities();
     if (doc ne null)
-      doc.nn.dtd = this.dtd.nn
+      doc.nn.dtd = this.dtd
 
     handle.endDTD(n)
   }

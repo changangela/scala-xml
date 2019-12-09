@@ -73,7 +73,7 @@ abstract trait Attribute extends MetaData {
 
   def wellformed(scope: NamespaceBinding): Boolean = {
     val arg = if (isPrefixed) scope getURI pre else null
-    (next(arg.nn, scope, key) == null) && (next wellformed scope)
+    (next(arg, scope, key) == null) && (next wellformed scope)
   }
 
   /** Returns an iterator on attributes */

@@ -70,14 +70,14 @@ class Floozy {
 
 object guardedMatch { // SI-3705
   // guard caused verifyerror in oldpatmat -- TODO: move this to compiler test suite
-  def updateNodes(ns: Seq[Node]): Seq[Node] =
-    for (subnode <- ns) yield subnode match {
-      case <d>{ _ }</d> if true => <d>abc</d>
-      case Elem(prefix, label, attribs, scope, children @ _*) =>
-        Elem(prefix, label, attribs, scope, minimizeEmpty = true, updateNodes(children): _*)
-      case other => other
-    }
-  updateNodes(<b/>)
+  // def updateNodes(ns: Seq[Node]): Seq[Node] =
+  //   for (subnode <- ns) yield subnode match {
+  //     case <d>{ _ }</d> if true => <d>abc</d>
+  //     case Elem(prefix, label, attribs, scope, children @ _*) =>
+  //       Elem(prefix, label, attribs, scope, minimizeEmpty = true, updateNodes(children): _*)
+  //     case other => other
+  //   }
+  // updateNodes(<b/>)
 }
 
 // SI-6897

@@ -87,10 +87,10 @@ class XMLTest {
     assertEquals(results1Expected, results1)
 
     {
-      val actual = for (t @ <book><title>Blabla</title></book> <- NodeSeq.fromSeq(books.child).toList)
-        yield t
-      val expected = List(<book><title>Blabla</title></book>)
-      assertEquals(expected, actual)
+      // val actual = for (t @ <book><title>Blabla</title></book> <- NodeSeq.fromSeq(books.child).toList)
+      //   yield t
+      // val expected = List(<book><title>Blabla</title></book>)
+      // assertEquals(expected, actual)
     }
 
   }
