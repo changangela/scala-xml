@@ -19,7 +19,7 @@ trait NodeFactory[A <: Node] {
   /* default behaviour is to use hash-consing */
   val cache = new scala.collection.mutable.HashMap[Int, List[A]]
 
-  protected def create(pre: String, name: String, attrs: MetaData, scope: NamespaceBinding, children: Seq[Node]): A
+  protected def create(pre: String | Null, name: String | Null, attrs: MetaData, scope: NamespaceBinding | Null, children: Seq[Node]): A
 
   protected def construct(hash: Int, old: List[A], pre: String, name: String, attrSeq: MetaData, scope: NamespaceBinding, children: Seq[Node]): A = {
     val el = create(pre, name, attrSeq, scope, children)

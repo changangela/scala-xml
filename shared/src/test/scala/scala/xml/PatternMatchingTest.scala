@@ -22,17 +22,17 @@ class PatternMatchingTest {
       case Elem(_, _, _, _, Text("1"), _*) => true
     }
 
-  // @Test
-  // def simpleNode =
-  //   assertTrue(<hello/> match {
-  //     case <hello/> => true
-  //   })
+  @Test
+  def simpleNode =
+    assertTrue(<hello/> match {
+      case <hello/> => true
+    })
 
-  // @Test
-  // def nameSpaced =
-  //   assertTrue(<x:ga xmlns:x="z"/> match {
-  //     case <x:ga/> => true
-  //   })
+  @Test
+  def nameSpaced =
+    assertTrue(<x:ga xmlns:x="z"/> match {
+      case <x:ga/> => true
+    })
 
   val cx = <z:hello foo="bar" xmlns:z="z" x:foo="baz" xmlns:x="the namespace from outer space">
              crazy text world

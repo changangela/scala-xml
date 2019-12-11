@@ -41,10 +41,10 @@ case class NamespaceBinding(prefix: String | Null, uri: String | Null, parent: N
   override def toString(): String = sbToString(buildString(_, TopScope))
 
   private def shadowRedefined(stop: NamespaceBinding): NamespaceBinding = {
-    def prefixList(x: NamespaceBinding | Null): List[String] =
+    def prefixList(x: NamespaceBinding | Null): List[String | Null] =
       if ((x == null) || (x eq stop)) Nil
-      else x.prefix.nn :: prefixList(x.parent)
-    def fromPrefixList(l: List[String]): NamespaceBinding = l match {
+      else x.prefix :: prefixList(x.parent)
+    def fromPrefixList(l: List[String | Null]): NamespaceBinding = l match {
       case Nil     => stop
       case x :: xs => new NamespaceBinding(x, this.getURI(x), fromPrefixList(xs))
     }

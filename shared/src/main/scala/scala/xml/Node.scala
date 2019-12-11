@@ -67,7 +67,7 @@ abstract class Node extends NodeSeq {
   /**
    *  convenience, same as `getNamespace(this.prefix)`
    */
-  def namespace = getNamespace(this.prefix.nn)
+  def namespace = getNamespace(this.prefix)
 
   /**
    * Convenience method, same as `scope.getURI(pre)` but additionally

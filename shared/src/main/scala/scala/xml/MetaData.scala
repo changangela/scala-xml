@@ -56,7 +56,7 @@ object MetaData {
    * returns key if md is unprefixed, pre+key is md is prefixed
    */
   def getUniversalKey(attrib: MetaData, scope: NamespaceBinding | Null) = attrib match {
-    case prefixed: PrefixedAttribute     => scope.nn.getURI(prefixed.pre).nn + prefixed.key
+    case prefixed: PrefixedAttribute     => { val s = scope.nn.getURI(prefixed.pre); (if(s == null) "" else s.nn) + prefixed.key }
     case unprefixed: UnprefixedAttribute => unprefixed.key
   }
 
@@ -190,7 +190,7 @@ abstract class MetaData
    * @param  key
    * @return value in Some(Seq[Node]) if key is found, None otherwise
    */
-  final def get(key: String | Null): Option[Seq[Node]] = Option(apply(key).nn)
+  final def get(key: String | Null): Option[Seq[Node]] = { val k = apply(key); if(k == null) None else Some(k.nn) }
 
   /** same as get(uri, owner.scope, key) */
   final def get(uri: String | Null, owner: Node, key: String): Option[Seq[Node]] =
@@ -205,7 +205,7 @@ abstract class MetaData
    * @return value as Some[Seq[Node]] if key is found, None otherwise
    */
   final def get(uri: String | Null, scope: NamespaceBinding, key: String): Option[Seq[Node]] =
-    Option(apply(uri, scope, key).nn)
+    { val k = apply(uri, scope, key); if(k == null) None else Some(k.nn) }
 
   protected def toString1(): String = sbToString(toString1)
 

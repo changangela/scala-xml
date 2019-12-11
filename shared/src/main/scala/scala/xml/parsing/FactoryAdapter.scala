@@ -86,8 +86,8 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
    * @param chIter
    * @return a new XML element.
    */
-  def createNode(pre: String, elemName: String, attribs: MetaData,
-                 scope: NamespaceBinding, chIter: List[Node]): Node // abstract
+  def createNode(pre: String | Null, elemName: String | Null, attribs: MetaData,
+                 scope: NamespaceBinding | Null, chIter: List[Node]): Node // abstract
 
   /**
    * creates a Text node.
@@ -168,7 +168,7 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
           val arg = if (pre == null) null else key
           scpe = new NamespaceBinding(arg, nullIfEmpty(value), scpe)
         } else
-          m = Attribute(Option(pre.nn), key, Text(value), m)
+          m = Attribute(pre, key, Text(value), m)
       }
 
       scopeStack = scpe :: scopeStack
@@ -208,7 +208,7 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
     scopeStack = scopeStack.tail
 
     // create element
-    rootElem = createNode(pre.nn, localName, metaData, scp, v.map(_.nn))
+    rootElem = createNode(pre, localName, metaData, scp, v.map(_.nn))
     hStack = rootElem :: hStack
     curTag = tagStack.head
     tagStack = tagStack.tail
