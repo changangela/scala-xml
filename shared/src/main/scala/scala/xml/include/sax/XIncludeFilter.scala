@@ -86,9 +86,9 @@ class XIncludeFilter extends XMLFilterImpl {
   // what if this isn't called????
   // do I need to check this in startDocument() and push something
   // there????
-  override def setDocumentLocator(locator: Locator): Unit = {
+  override def setDocumentLocator(locator: Locator | Null): Unit = {
     locators push locator
-    val base = locator.getSystemId()
+    val base = locator.nn.getSystemId()
     try {
       bases.push(new URL(base))
     } catch {
@@ -113,8 +113,8 @@ class XIncludeFilter extends XMLFilterImpl {
    */
   def insideIncludeElement(): Boolean = level != 0
 
-  override def startElement(uri: String, localName: String, qName: String, atts1: Attributes): Unit = {
-    var atts = atts1
+  override def startElement(uri: String | Null, localName: String | Null, qName: String | Null, atts1: Attributes | Null): Unit = {
+    var atts = atts1.nn
     if (level == 0) { // We're not inside an xi:include element
 
       // Adjust bases stack by pushing either the new
@@ -169,7 +169,7 @@ class XIncludeFilter extends XMLFilterImpl {
     }
   }
 
-  override def endElement(uri: String, localName: String, qName: String): Unit = {
+  override def endElement(uri: String | Null, localName: String | Null, qName: String | Null): Unit = {
     if (uri.equals(XINCLUDE_NAMESPACE)
       && localName.equals("include")) {
       level -= 1
@@ -195,27 +195,27 @@ class XIncludeFilter extends XMLFilterImpl {
   }
 
   // how do prefix mappings move across documents????
-  override def startPrefixMapping(prefix: String, uri: String): Unit = {
+  override def startPrefixMapping(prefix: String | Null, uri: String | Null): Unit = {
     if (level == 0) super.startPrefixMapping(prefix, uri)
   }
 
-  override def endPrefixMapping(prefix: String): Unit = {
+  override def endPrefixMapping(prefix: String | Null): Unit = {
     if (level == 0) super.endPrefixMapping(prefix)
   }
 
-  override def characters(ch: Array[Char], start: Int, length: Int): Unit = {
+  override def characters(ch: Array[Char] | Null, start: Int, length: Int): Unit = {
     if (level == 0) super.characters(ch, start, length)
   }
 
-  override def ignorableWhitespace(ch: Array[Char], start: Int, length: Int): Unit = {
+  override def ignorableWhitespace(ch: Array[Char] | Null, start: Int, length: Int): Unit = {
     if (level == 0) super.ignorableWhitespace(ch, start, length)
   }
 
-  override def processingInstruction(target: String, data: String): Unit = {
+  override def processingInstruction(target: String | Null, data: String | Null): Unit = {
     if (level == 0) super.processingInstruction(target, data)
   }
 
-  override def skippedEntity(name: String): Unit = {
+  override def skippedEntity(name: String | Null): Unit = {
     if (level == 0) super.skippedEntity(name)
   }
 
@@ -252,10 +252,10 @@ class XIncludeFilter extends XMLFilterImpl {
    * be downloaded from the specified URL
    * or if the encoding is not recognized
    */
-  private def includeTextDocument(url: String, encoding1: String): Unit = {
+  private def includeTextDocument(url: String, encoding1: String | Null): Unit = {
     var encoding = encoding1
-    if (encoding == null || encoding.trim().equals("")) encoding = "UTF-8"
-    var source: URL = null
+    if (encoding == null || encoding.nn.trim().equals("")) encoding = "UTF-8"
+    var source: URL | Null = null
     try {
       val base = bases.peek().asInstanceOf[URL]
       source = new URL(base, url)
@@ -268,7 +268,7 @@ class XIncludeFilter extends XMLFilterImpl {
     }
 
     try {
-      val uc = source.openConnection()
+      val uc = source.nn.openConnection()
       val in = new BufferedInputStream(uc.getInputStream())
       val encodingFromHeader = uc.getContentEncoding()
       var contentType = uc.getContentType()
@@ -288,7 +288,7 @@ class XIncludeFilter extends XMLFilterImpl {
           }
         }
       }
-      val reader = new InputStreamReader(in, encoding)
+      val reader = new InputStreamReader(in, encoding.nn)
       val c = new Array[Char](1024)
       var charsRead: Int = 0 // bogus init value
       do {
@@ -298,10 +298,10 @@ class XIncludeFilter extends XMLFilterImpl {
     } catch {
       case e: UnsupportedEncodingException =>
         throw new SAXException("Unsupported encoding: "
-          + encoding + getLocation(), e)
+          + encoding.nn + getLocation(), e)
       case e: IOException =>
         throw new SAXException("Document not found: "
-          + source.toExternalForm() + getLocation(), e)
+          + source.nn.toExternalForm() + getLocation(), e)
     }
 
   }

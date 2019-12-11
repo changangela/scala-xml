@@ -24,7 +24,7 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
 
   var out = new OutputStreamWriter(outs, encoding)
 
-  def setDocumentLocator(locator: Locator): Unit = {}
+  def setDocumentLocator(locator: Locator | Null): Unit = {}
 
   def startDocument(): Unit = {
     try {
@@ -45,18 +45,18 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
     }
   }
 
-  def startPrefixMapping(prefix: String, uri: String): Unit = {}
+  def startPrefixMapping(prefix: String | Null, uri: String | Null): Unit = {}
 
-  def endPrefixMapping(prefix: String): Unit = {}
+  def endPrefixMapping(prefix: String | Null): Unit = {}
 
-  def startElement(namespaceURI: String, localName: String, qualifiedName: String, atts: Attributes) = {
+  def startElement(namespaceURI: String | Null, localName: String | Null, qualifiedName: String | Null, atts: Attributes | Null) = {
     try {
       out.write("<" + qualifiedName)
-      var i = 0; while (i < atts.getLength()) {
+      var i = 0; while (i < atts.nn.getLength()) {
         out.write(" ")
-        out.write(atts.getQName(i))
+        out.write(atts.nn.getQName(i))
         out.write("='")
-        val value = atts.getValue(i)
+        val value = atts.nn.getValue(i)
         // @todo Need to use character references if the encoding
         // can't support the character
         out.write(scala.xml.Utility.escape(value))
@@ -70,7 +70,7 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
     }
   }
 
-  def endElement(namespaceURI: String, localName: String, qualifiedName: String): Unit = {
+  def endElement(namespaceURI: String | Null, localName: String | Null, qualifiedName: String | Null): Unit = {
     try {
       out.write("</" + qualifiedName + ">")
     } catch {
@@ -81,10 +81,10 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
 
   // need to escape characters that are not in the given
   // encoding using character references????
-  def characters(ch: Array[Char], start: Int, length: Int): Unit = {
+  def characters(ch: Array[Char] | Null, start: Int, length: Int): Unit = {
     try {
       var i = 0; while (i < length) {
-        val c = ch(start + i)
+        val c = ch.nn(start + i)
         if (c == '&') out.write("&amp;")
         else if (c == '<') out.write("&lt;")
         // This next fix is normally not necessary.
@@ -100,12 +100,12 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
     }
   }
 
-  def ignorableWhitespace(ch: Array[Char], start: Int, length: Int): Unit = {
+  def ignorableWhitespace(ch: Array[Char] | Null, start: Int, length: Int): Unit = {
     this.characters(ch, start, length)
   }
 
   // do I need to escape text in PI????
-  def processingInstruction(target: String, data: String): Unit = {
+  def processingInstruction(target: String | Null, data: String | Null): Unit = {
     try {
       out.write("<?" + target + " " + data + "?>")
     } catch {
@@ -114,7 +114,7 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
     }
   }
 
-  def skippedEntity(name: String): Unit = {
+  def skippedEntity(name: String | Null): Unit = {
     try {
       out.write("&" + name + ";")
     } catch {
@@ -127,15 +127,15 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
   private var inDTD: Boolean = false
   private var entities = List.empty[String]
 
-  def startDTD(name: String, publicID: String, systemID: String): Unit = {
+  def startDTD(name: String | Null, publicID: String | Null, systemID: String | Null): Unit = {
     inDTD = true
     // if this is the source document, output a DOCTYPE declaration
     if (entities.isEmpty) {
       var id = ""
-      if (publicID != null) id = " PUBLIC \"" + publicID + "\" \"" + systemID + '"'
-      else if (systemID != null) id = " SYSTEM \"" + systemID + '"'
+      if (publicID != null) id = " PUBLIC \"" + publicID.nn + "\" \"" + systemID.nn + '"'
+      else if (systemID != null) id = " SYSTEM \"" + systemID.nn + '"'
       try {
-        out.write("<!DOCTYPE " + name + id + ">\r\n")
+        out.write("<!DOCTYPE " + name.nn + id + ">\r\n")
       } catch {
         case e: IOException =>
           throw new SAXException("Error while writing DOCTYPE", e)
@@ -144,11 +144,11 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
   }
   def endDTD(): Unit = {}
 
-  def startEntity(name: String): Unit = {
-    entities =  name :: entities
+  def startEntity(name: String | Null): Unit = {
+    entities =  name.nn :: entities
   }
 
-  def endEntity(name: String): Unit = {
+  def endEntity(name: String | Null): Unit = {
     entities = entities.tail
   }
 
@@ -157,17 +157,17 @@ class XIncluder(outs: OutputStream, encoding: String) extends ContentHandler wit
 
   // Just need this reference so we can ask if a comment is
   // inside an include element or not
-  private var filter: XIncludeFilter = null
+  private var filter: XIncludeFilter | Null = null
 
   def setFilter(filter: XIncludeFilter): Unit = {
     this.filter = filter
   }
 
-  def comment(ch: Array[Char], start: Int, length: Int): Unit = {
-    if (!inDTD && !filter.insideIncludeElement()) {
+  def comment(ch: Array[Char] | Null, start: Int, length: Int): Unit = {
+    if (!inDTD && !filter.nn.insideIncludeElement()) {
       try {
         out.write("<!--")
-        out.write(ch, start, length)
+        out.write(ch.nn, start, length)
         out.write("-->")
       } catch {
         case e: IOException =>

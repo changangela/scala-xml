@@ -22,12 +22,12 @@ class NoBindingFactoryAdapter extends FactoryAdapter with NodeFactory[Elem] {
   def nodeContainsText(label: String) = true
 
   /** From NodeFactory.  Constructs an instance of scala.xml.Elem -- TODO: deprecate as in Elem */
-  protected def create(pre: String, label: String, attrs: MetaData, scope: NamespaceBinding, children: Seq[Node]): Elem =
+  protected def create(pre: String | Null, label: String | Null, attrs: MetaData, scope: NamespaceBinding | Null, children: Seq[Node]): Elem =
     Elem(pre, label, attrs, scope, children.isEmpty, children: _*)
 
   /** From FactoryAdapter.  Creates a node. never creates the same node twice, using hash-consing.
      TODO: deprecate as in Elem, or forward to create?? */
-  def createNode(pre: String, label: String, attrs: MetaData, scope: NamespaceBinding, children: List[Node]): Elem =
+  def createNode(pre: String | Null, label: String | Null, attrs: MetaData, scope: NamespaceBinding | Null, children: List[Node]): Elem =
     Elem(pre, label, attrs, scope, children.isEmpty, children: _*)
 
   /** Creates a text node. */

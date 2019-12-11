@@ -27,12 +27,12 @@ class ElementValidator() extends Function1[Node, Boolean] {
 
   private var exc: List[ValidationException] = Nil
 
-  protected var contentModel: ContentModel = _
-  protected var dfa: DetWordAutom[ElemName] = _
+  protected var contentModel: ContentModel | Null = _
+  protected var dfa: DetWordAutom[ElemName] | Null = _
   protected var adecls: List[AttrDecl] = _
 
   /** set content model, enabling element validation */
-  def setContentModel(cm: ContentModel) = {
+  def setContentModel(cm: ContentModel | Null) = {
     contentModel = cm
     cm match {
       case ELEMENTS(r) =>
@@ -57,7 +57,7 @@ class ElementValidator() extends Function1[Node, Boolean] {
         case _                                => !skipPCDATA
       }
       case x => x.namespace eq null
-    }.map (x => ElemName(x.label))
+    }.map (x => ElemName(x.label.nn))
   }
 
   /**
@@ -78,12 +78,12 @@ class ElementValidator() extends Function1[Node, Boolean] {
         None
       }
 
-      find(attr.key) match {
+      find(attr.key.nn) match {
         case None =>
-          exc ::= fromUndefinedAttribute(attr.key)
+          exc ::= fromUndefinedAttribute(attr.key.nn)
 
         case Some(AttrDecl(_, tpe, DEFAULT(true, fixedValue))) if attrStr != fixedValue =>
-          exc ::= fromFixedAttribute(attr.key, fixedValue, attrStr)
+          exc ::= fromFixedAttribute(attr.key.nn, fixedValue, attrStr)
 
         case _ =>
       }
@@ -116,9 +116,9 @@ class ElementValidator() extends Function1[Node, Boolean] {
       (exc.length == j) // - true if no new exception
 
     case _: ELEMENTS =>
-      dfa isFinal {
+      dfa.nn isFinal {
         getIterable(nodes, skipPCDATA = false).foldLeft(0) { (q, e) =>
-          (dfa delta q).getOrElse(e, throw ValidationException("element %s not allowed here" format e))
+          (dfa.nn delta q).getOrElse(e, throw ValidationException("element %s not allowed here" format e))
         }
       }
     case _ => false

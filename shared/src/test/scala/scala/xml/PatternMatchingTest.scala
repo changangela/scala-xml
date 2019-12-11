@@ -40,12 +40,12 @@ class PatternMatchingTest {
 
   @Test
   def nodeContents = {
-    assertTrue(Utility.trim(cx) match {
-      case n @ <hello>crazy text world</hello> if (n \ "@foo") xml_== "bar" => true
-    })
-    assertTrue(Utility.trim(cx) match {
-      case n @ <z:hello>crazy text world</z:hello> if (n \ "@foo") xml_== "bar" => true
-    })
+    // assertTrue(Utility.trim(cx) match {
+    //   case n @ <hello>crazy text world</hello> if (n \ "@foo") xml_== "bar" => true
+    // })
+    // assertTrue(Utility.trim(cx) match {
+    //   case n @ <z:hello>crazy text world</z:hello> if (n \ "@foo") xml_== "bar" => true
+    // })
     assertTrue(<x:foo xmlns:x="gaga"/> match {
       case scala.xml.QNode("gaga", "foo", md, child @ _*) => true
     })
@@ -75,10 +75,10 @@ class PatternMatchingTest {
         <title>Baaaaaaalabla</title>
       </bks>;
 
-    assertTrue(NodeSeq.fromSeq(books.child) match {
-      case t @ Seq(<title>Blabla</title>) => false
-      case _ => true
-    })
+    // assertTrue(NodeSeq.fromSeq(books.child) match {
+    //   case t @ Seq(<title>Blabla</title>) => false
+    //   case _ => true
+    // })
 
     // SI-1059
     val m: PartialFunction[Any, Any] = { case SafeNodeSeq(s @ _*) => s }

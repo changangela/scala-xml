@@ -46,7 +46,7 @@ class ConstructingParserTest {
       override def reportError(pos: Int, msg: String, out: java.io.PrintStream = Console.err) = {}
     }
 
-    val doc = ConstructingParser.fromSource(source, true).document()
+    val doc = ConstructingParser.fromSource(source, true).document().nn
 
     assertEquals(expected, doc.theSeq)
   }
@@ -75,10 +75,10 @@ class ConstructingParserTest {
   @Test
   def SI6341issue65: Unit = {
     val str = """<elem one="test" two="test2" three="test3"/>"""
-    val cpa = ConstructingParser.fromSource(io.Source.fromString(str), preserveWS = true)
+    val cpa = ConstructingParser.fromSource(Source.fromString(str), preserveWS = true)
     val cpadoc = cpa.document()
     val ppr = new PrettyPrinter(80,5)
-    val out = ppr.format(cpadoc.docElem)
+    val out = ppr.format(cpadoc.nn.docElem)
     assertEquals(str, out)
   }
 }

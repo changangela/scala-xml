@@ -14,11 +14,11 @@ import java.io.File
 import scala.io.Source
 
 object ConstructingParser {
-  def fromFile(inp: File, preserveWS: Boolean) =
-    new ConstructingParser(Source.fromFile(inp), preserveWS).initialize
+  def fromFile(inp: File | Null, preserveWS: Boolean) =
+    new ConstructingParser(Source.fromFile(inp.nn), preserveWS).initialize
 
-  def fromSource(inp: Source, preserveWS: Boolean) =
-    new ConstructingParser(inp, preserveWS).initialize
+  def fromSource(inp: Source | Null, preserveWS: Boolean) =
+    new ConstructingParser(inp.nn, preserveWS).initialize
 }
 
 /**

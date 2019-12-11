@@ -18,8 +18,8 @@ package parsing
 abstract class ConstructingHandler extends MarkupHandler {
   val preserveWS: Boolean
 
-  def elem(pos: Int, pre: String, label: String, attrs: MetaData,
-           pscope: NamespaceBinding, empty: Boolean, nodes: NodeSeq): NodeSeq =
+  def elem(pos: Int, pre: String | Null, label: String | Null, attrs: MetaData,
+           pscope: NamespaceBinding | Null, empty: Boolean, nodes: NodeSeq): NodeSeq =
     Elem(pre, label, attrs, pscope, empty, nodes: _*)
 
   def procInstr(pos: Int, target: String, txt: String) =

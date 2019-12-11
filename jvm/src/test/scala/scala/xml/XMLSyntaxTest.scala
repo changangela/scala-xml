@@ -8,11 +8,11 @@ class XMLSyntaxTestJVM {
   @Test
   def test3(): Unit = {
     // this demonstrates how to handle entities
-    val s = io.Source.fromString("<a>&nbsp;</a>")
+    val s = scala.io.Source.fromString("<a>&nbsp;</a>")
     object parser extends xml.parsing.ConstructingParser(s, false /*ignore ws*/) {
-      override def replacementText(entityName: String): io.Source = {
+      override def replacementText(entityName: String): scala.io.Source = {
         entityName match {
-          case "nbsp" => io.Source.fromString("\u0160");
+          case "nbsp" => scala.io.Source.fromString("\u0160");
           case _ => super.replacementText(entityName);
         }
       }

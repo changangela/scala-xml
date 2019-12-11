@@ -17,9 +17,9 @@ import org.xml.sax.helpers.DefaultHandler
 // can be mixed into FactoryAdapter if desired
 trait ConsoleErrorHandler extends DefaultHandler {
   // ignore warning, crimson warns even for entity resolution!
-  override def warning(ex: SAXParseException): Unit = {}
-  override def error(ex: SAXParseException): Unit = printError("Error", ex)
-  override def fatalError(ex: SAXParseException): Unit = printError("Fatal Error", ex)
+  override def warning(ex: SAXParseException | Null): Unit = {}
+  override def error(ex: SAXParseException | Null): Unit = printError("Error", ex.nn)
+  override def fatalError(ex: SAXParseException | Null): Unit = printError("Fatal Error", ex.nn)
 
   protected def printError(errtype: String, ex: SAXParseException): Unit =
     Console.withOut(Console.err) {
@@ -36,39 +36,39 @@ trait ConsoleErrorHandler extends DefaultHandler {
  *  underlying SAX parser.
  */
 abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node] {
-  var rootElem: Node = null
+  var rootElem: Node | Null = null
 
   val buffer = new StringBuilder()
   /** List of attributes
-    * 
+    *
     * Previously was a mutable [[scala.collection.mutable.Stack Stack]], but is now a mutable reference to an immutable [[scala.collection.immutable.List List]].
-    * 
-    * @since 2.0.0 
+    *
+    * @since 2.0.0
     */
   var attribStack = List.empty[MetaData]
   /** List of elements
-    * 
+    *
     * Previously was a mutable [[scala.collection.mutable.Stack Stack]], but is now a mutable reference to an immutable [[scala.collection.immutable.List List]].
-    * 
-    * @since 2.0.0 
+    *
+    * @since 2.0.0
     */
-  var hStack = List.empty[Node] // [ element ] contains siblings
+  var hStack = List.empty[Node | Null] // [ element ] contains siblings
   /** List of element names
-    * 
+    *
     * Previously was a mutable [[scala.collection.mutable.Stack Stack]], but is now a mutable reference to an immutable [[scala.collection.immutable.List List]].
-    * 
-    * @since 2.0.0 
+    *
+    * @since 2.0.0
     */
-  var tagStack = List.empty[String]
+  var tagStack = List.empty[String | Null]
   /** List of namespaces
-    * 
+    *
     * Previously was a mutable [[scala.collection.mutable.Stack Stack]], but is now a mutable reference to an immutable [[scala.collection.immutable.List List]].
-    * 
-    * @since 2.0.0 
+    *
+    * @since 2.0.0
     */
   var scopeStack = List.empty[NamespaceBinding]
 
-  var curTag: String = null
+  var curTag: String | Null = null
   var capture: Boolean = false
 
   // abstract methods
@@ -86,8 +86,8 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
    * @param chIter
    * @return a new XML element.
    */
-  def createNode(pre: String, elemName: String, attribs: MetaData,
-                 scope: NamespaceBinding, chIter: List[Node]): Node // abstract
+  def createNode(pre: String | Null, elemName: String | Null, attribs: MetaData,
+                 scope: NamespaceBinding | Null, chIter: List[Node]): Node // abstract
 
   /**
    * creates a Text node.
@@ -113,13 +113,13 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
    * @param offset
    * @param length
    */
-  override def characters(ch: Array[Char], offset: Int, length: Int): Unit = {
+  override def characters(ch: Array[Char] | Null, offset: Int, length: Int): Unit = {
     if (!capture) return
     // compliant: report every character
-    else if (!normalizeWhitespace) buffer.appendAll(ch, offset, length)
+    else if (!normalizeWhitespace) buffer.appendAll(ch.nn, offset, length)
     // normalizing whitespace is not compliant, but useful
     else {
-      var it = ch.slice(offset, offset + length).iterator
+      var it = ch.nn.slice(offset, offset + length).iterator
       while (it.hasNext) {
         val c = it.next()
         val isSpace = c.isWhitespace
@@ -140,16 +140,16 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
 
   /* Start element. */
   override def startElement(
-    uri: String,
-    _localName: String,
-    qname: String,
-    attributes: Attributes): Unit =
+    uri: String | Null,
+    _localName: String | Null,
+    qname: String | Null,
+    attributes: Attributes | Null): Unit =
     {
       captureText()
       tagStack = curTag :: tagStack
       curTag = qname
 
-      val localName = splitName(qname)._2
+      val localName = splitName(qname.nn)._2
       capture = nodeContainsText(localName)
 
       hStack =  null :: hStack
@@ -158,17 +158,17 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
         if (scopeStack.isEmpty) TopScope
         else scopeStack.head
 
-      for (i <- (0 until attributes.getLength).reverse) {
-        val qname = attributes getQName i
-        val value = attributes getValue i
+      for (i <- (0 until attributes.nn.getLength).reverse) {
+        val qname = attributes.nn getQName i
+        val value = attributes.nn getValue i
         val (pre, key) = splitName(qname)
         def nullIfEmpty(s: String) = if (s == "") null else s
 
-        if (pre == "xmlns" || (pre == null && qname == "xmlns")) {
+        if ((pre != null && pre.nn == "xmlns") || (pre == null && qname == "xmlns")) {
           val arg = if (pre == null) null else key
           scpe = new NamespaceBinding(arg, nullIfEmpty(value), scpe)
         } else
-          m = Attribute(Option(pre), key, Text(value), m)
+          m = Attribute(pre, key, Text(value), m)
       }
 
       scopeStack = scpe :: scopeStack
@@ -192,7 +192,7 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
    * @param qname
    * @throws org.xml.sax.SAXException if ..
    */
-  override def endElement(uri: String, _localName: String, qname: String): Unit = {
+  override def endElement(uri: String | Null, _localName: String | Null, qname: String | Null): Unit = {
     captureText()
     val metaData = attribStack.head
     attribStack = attribStack.tail
@@ -203,23 +203,23 @@ abstract class FactoryAdapter extends DefaultHandler with factory.XMLLoader[Node
       case null :: hs => hs
       case hs => hs
     }
-    val (pre, localName) = splitName(qname)
+    val (pre, localName) = splitName(qname.nn)
     val scp = scopeStack.head
     scopeStack = scopeStack.tail
 
     // create element
-    rootElem = createNode(pre, localName, metaData, scp, v)
+    rootElem = createNode(pre, localName, metaData, scp, v.map(_.nn))
     hStack = rootElem :: hStack
     curTag = tagStack.head
     tagStack = tagStack.tail
-    capture = curTag != null && nodeContainsText(curTag) // root level
+    capture = curTag != null && nodeContainsText(curTag.nn) // root level
   }
 
   /**
    * Processing instruction.
    */
-  override def processingInstruction(target: String, data: String): Unit = {
+  override def processingInstruction(target: String | Null, data: String | Null): Unit = {
     captureText()
-    hStack = hStack.reverse_:::(createProcInstr(target, data).toList)
+    hStack = hStack.reverse_:::(createProcInstr(target.nn, data.nn).toList)
   }
 }
